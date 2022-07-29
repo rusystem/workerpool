@@ -1,11 +1,10 @@
-package workerpool
+package main
 
 import (
 	"fmt"
 	"log"
 	"math/rand"
 	"os"
-	"sync"
 	"time"
 )
 
@@ -33,7 +32,6 @@ func (u User) getActivityInfo() string {
 
 func main() {
 	rand.Seed(time.Now().Unix())
-	wg := &sync.WaitGroup{}
 
 	const workerCount, usersCount = 5, 100
 
@@ -43,7 +41,6 @@ func main() {
 	startTime := time.Now()
 
 	go generateUsers(usersCount, usersJobs)
-	wg.Wait()
 
 	for i := 0; i < workerCount; i++ {
 		go worker(usersJobs, usersResult)
@@ -79,13 +76,11 @@ func worker(usersJobs <-chan User, usersResult chan<- User) {
 func generateUsers(count int, users chan<- User) {
 
 	for i := 0; i < count; i++ {
-		go func() {
-			users <- User{
-				id:    i + 1,
-				email: fmt.Sprintf("user%d@company.com", i+1),
-				logs:  generateLogs(rand.Intn(1000)),
-			}
-		}()
+		users <- User{
+			id:    i + 1,
+			email: fmt.Sprintf("user%d@company.com", i+1),
+			logs:  generateLogs(rand.Intn(1000)),
+		}
 		fmt.Printf("generated user %d\n", i+1)
 		time.Sleep(time.Millisecond * 100)
 	}
